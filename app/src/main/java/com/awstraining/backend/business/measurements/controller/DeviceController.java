@@ -9,6 +9,8 @@ import com.awstraining.backend.api.rest.v1.model.Measurement;
 import com.awstraining.backend.api.rest.v1.model.Measurements;
 import com.awstraining.backend.business.measurements.MeasurementDO;
 import com.awstraining.backend.business.measurements.MeasurementService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ class DeviceController implements DeviceIdApi {
     private static final Logger LOGGER = LogManager.getLogger(DeviceController.class);
 
     private final MeasurementService service;
+    private MeterRegistry meterRegistry;
 
     @Autowired
     public DeviceController(final MeasurementService service) {
@@ -30,6 +33,14 @@ class DeviceController implements DeviceIdApi {
 
     @Override
     public ResponseEntity<Measurement> publishMeasurements(final String deviceId, final Measurement measurement) {
+        String methodname = new Ocject(){}.getClass().getEnclosingMethod().getName();
+        Counter counter = Counter
+                .builder("publishMeasurements.counter")
+                .tag("method", methodname)
+                .register(meterRegistry);
+
+        counter.increment();
+
         LOGGER.info("Publishing measurement for device '{}'", deviceId);
         final MeasurementDO measurementDO = fromMeasurement(deviceId, measurement);
         service.saveMeasurement(measurementDO);
@@ -38,7 +49,15 @@ class DeviceController implements DeviceIdApi {
     @Override
     public ResponseEntity<Measurements> retrieveMeasurements(final String deviceId) {
         LOGGER.info("Retrieving all measurements for device '{}'", deviceId);
-        LOGGER.info("Random log for '{}'", deviceId);
+
+        String methodname = new Ocject(){}.getClass().getEnclosingMethod().getName();
+        Counter counter = Counter
+                .builder("retrieveMeasurements.counter")
+                .tag("method", methodname)
+                .register(meterRegistry);
+
+        counter.increment();
+
         final List<Measurement> measurements = service.getMeasurements()
                 .stream()
                 .map(this::toMeasurement)
