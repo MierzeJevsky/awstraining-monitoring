@@ -33,7 +33,7 @@ class DeviceController implements DeviceIdApi {
 
     @Override
     public ResponseEntity<Measurement> publishMeasurements(final String deviceId, final Measurement measurement) {
-        String methodname = new Ocject(){}.getClass().getEnclosingMethod().getName();
+        String methodname = new Object(){}.getClass().getEnclosingMethod().getName();
         Counter counter = Counter
                 .builder("publishMeasurements.counter")
                 .tag("method", methodname)
@@ -50,7 +50,7 @@ class DeviceController implements DeviceIdApi {
     public ResponseEntity<Measurements> retrieveMeasurements(final String deviceId) {
         LOGGER.info("Retrieving all measurements for device '{}'", deviceId);
 
-        String methodname = new Ocject(){}.getClass().getEnclosingMethod().getName();
+        String methodname = new Object(){}.getClass().getEnclosingMethod().getName();
         Counter counter = Counter
                 .builder("retrieveMeasurements.counter")
                 .tag("method", methodname)
