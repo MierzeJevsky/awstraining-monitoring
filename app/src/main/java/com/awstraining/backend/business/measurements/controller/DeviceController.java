@@ -24,22 +24,17 @@ class DeviceController implements DeviceIdApi {
     private static final Logger LOGGER = LogManager.getLogger(DeviceController.class);
 
     private final MeasurementService service;
-    private MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry;
 
     @Autowired
-    public DeviceController(final MeasurementService service) {
+    public DeviceController(final MeasurementService service, final MeterRegistry meterRegistry) {
         this.service = service;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
     public ResponseEntity<Measurement> publishMeasurements(final String deviceId, final Measurement measurement) {
-        String methodname = new Object(){}.getClass().getEnclosingMethod().getName();
-        Counter counter = Counter
-                .builder("publishMeasurements.counter")
-                .tag("method", methodname)
-                .register(meterRegistry);
-
-        counter.increment();
+        meterRegistry.counter("publishMeasurements.counter", "method", "invocation").increment();
 
         LOGGER.info("Publishing measurement for device '{}'", deviceId);
         final MeasurementDO measurementDO = fromMeasurement(deviceId, measurement);
@@ -49,14 +44,7 @@ class DeviceController implements DeviceIdApi {
     @Override
     public ResponseEntity<Measurements> retrieveMeasurements(final String deviceId) {
         LOGGER.info("Retrieving all measurements for device '{}'", deviceId);
-
-        String methodname = new Object(){}.getClass().getEnclosingMethod().getName();
-        Counter counter = Counter
-                .builder("retrieveMeasurements.counter")
-                .tag("method", methodname)
-                .register(meterRegistry);
-
-        counter.increment();
+        meterRegistry.counter("retrieveMeasurements.counter", "method", "invocation").increment();
 
         final List<Measurement> measurements = service.getMeasurements()
                 .stream()
